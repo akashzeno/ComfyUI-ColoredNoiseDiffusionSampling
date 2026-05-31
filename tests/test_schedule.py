@@ -37,8 +37,6 @@ def test_gamma_scaling_residual():
 
 
 def test_load_real_gamma_matrix():
-    pkg = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    # pkg above resolves to .../ComfyUI/custom_nodes ; rebuild to the package dir:
     pkg_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     p = os.path.join(pkg_dir, "gamma_matrices", "gamma_matrix_scaled.pt")
     g = schedule.load_gamma_matrix(p)

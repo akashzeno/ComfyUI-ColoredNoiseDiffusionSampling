@@ -1,4 +1,3 @@
-import math
 import torch
 
 from src.engine import spectral
