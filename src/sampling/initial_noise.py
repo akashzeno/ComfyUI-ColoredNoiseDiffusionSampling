@@ -52,9 +52,9 @@ class Noise_ColoredInitial:
         latent = input_latent["samples"]
         _log.info("colored initial noise: alpha=%.2f | energy=%.2f | seed=%s",
                   self.params.alpha_start, self.params.energy_scale, self.seed)
-        generator = torch.manual_seed(self.seed)
-        if latent.is_nested:
-            import comfy.nested_tensor as nt
-            return nt.NestedTensor([self._inner(t, generator, None) for t in latent.unbind()])
         noise_inds = input_latent.get("batch_index", None)
+        generator = torch.manual_seed(self.seed)
+        if latent.is_nested:  # mirror comfy.sample.prepare_noise: same generator + noise_inds per sub-tensor
+            import comfy.nested_tensor as nt
+            return nt.NestedTensor([self._inner(t, generator, noise_inds) for t in latent.unbind()])
         return self._inner(latent, generator, noise_inds)

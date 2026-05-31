@@ -26,7 +26,7 @@ def progress_from_sigma(sigma, sigma_max, sigma_min):
 def interp_alpha(alpha_start, alpha_end, progress, mode="linear", sharpness=4.0):
     """Interpolate the spectral exponent alpha between start/end over progress in [0, 1]."""
     p = min(max(float(progress), 0.0), 1.0)
-    if mode == "exponential":
+    if mode == "exponential" and abs(sharpness) > 1e-6:  # sharpness~0 -> denominator 0; use linear
         p = (math.exp(sharpness * p) - 1.0) / (math.exp(sharpness) - 1.0)
     return alpha_start + p * (alpha_end - alpha_start)
 

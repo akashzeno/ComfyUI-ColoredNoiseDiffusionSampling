@@ -22,7 +22,8 @@ def radial_bin_map_2d(h, w, num_bins, device):
         r = r / r.max()
         idx = (r * (num_bins - 1)).round().long().clamp(0, num_bins - 1)
         _BIN_CACHE[key] = idx
-    return idx.to(device)
+    # .clone() so callers can never mutate the shared module-global cache entry in place.
+    return idx.to(device).clone()
 
 
 def radial_bin_map_1d(length, num_bins, device):
@@ -34,7 +35,8 @@ def radial_bin_map_1d(length, num_bins, device):
         r = f / f.max()
         idx = (r * (num_bins - 1)).round().long().clamp(0, num_bins - 1)
         _BIN_CACHE[key] = idx
-    return idx.to(device)
+    # .clone() so callers can never mutate the shared module-global cache entry in place.
+    return idx.to(device).clone()
 
 
 def parametric_scaling(num_bins, alpha, device=torch.device("cpu")):
@@ -49,7 +51,8 @@ def parametric_scaling(num_bins, alpha, device=torch.device("cpu")):
     scaling = r.clamp(min=eps).pow(-alpha / 2.0)
     if alpha > 0:
         scaling[0] = 0.0
-    return scaling
+    # Keep finite for extreme (programmatic) alpha; the UI clamps alpha to [-8, 8].
+    return torch.nan_to_num(scaling, nan=0.0, posinf=1e12, neginf=0.0)
 
 
 def _renorm_unit(t, energy_scale):
@@ -96,7 +99,8 @@ def color_tensor(white, scaling_vector, energy_scale=1.0):
         spec = torch.fft.fftn(wf, dim=dims)
         shaped = torch.fft.ifftn(spec * grid, dim=dims).real
     except RuntimeError:
-        # DirectML / MPS reject torch.fft -> CPU fallback (mirrors comfy_extras FreeU/FreSca).
+        # The float32 cast above follows comfy_extras FreeU/FreSca; the CPU fallback here is ours,
+        # for backends (DirectML / MPS) that reject torch.fft outright.
         _log.warn_once("fft_cpu_fallback_%s" % white.device.type,
                        "torch.fft unsupported on %s; using CPU fallback for spectral shaping",
                        white.device.type)

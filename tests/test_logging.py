@@ -24,6 +24,9 @@ def test_per_run_info_log(caplog):
     assert "colored noise ACTIVE" in msgs
     assert "base=_fake_base" in msgs
     assert "alpha 0.00->-1.50" in msgs
+    # the per-run line must be at INFO (visible by default), not DEBUG/WARNING
+    assert any(r.levelno == logging.INFO and "colored noise ACTIVE" in r.getMessage()
+               for r in caplog.records)
 
 
 def test_gamma_mode_info_log(caplog):

@@ -3,3 +3,10 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .DS_Store
+
+# guard against accidental throwaway scratch/probe scripts
+_probe*.py
+_scratch*.py
+_proof*.py
+_consol*.py
+_tmp*.py

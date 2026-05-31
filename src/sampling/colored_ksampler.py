@@ -22,6 +22,13 @@ def build_colored_sampler(base_fn, base_opts, params):
     accepted = inspect.signature(base_fn).parameters
     opts = {k: v for k, v in base_opts.items() if k in accepted}
 
+    # eta-gated SDE/ancestral bases inject no noise (and thus no coloring) when eta == 0.
+    if "eta" in accepted and float(opts.get("eta", 1.0)) == 0.0:
+        base_name = getattr(base_fn, "__name__", "sampler").replace("sample_", "")
+        _log.warn_once("eta0_%s" % base_name,
+                       "eta=0 on '%s' disables stochasticity; colored noise has no effect "
+                       "(raise eta above 0 to apply coloring)", base_name)
+
     def sampler_function(model, x, sigmas, extra_args=None, callback=None, disable=None, **extra_options):
         seed = (extra_args or {}).get("seed", None)
         base_name = getattr(base_fn, "__name__", "sampler").replace("sample_", "")

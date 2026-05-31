@@ -94,7 +94,7 @@ The pack logs through Python's standard `logging` (named logger `ComfyUI-Colored
 so you can see in the ComfyUI console that it's actually running. All messages are tagged
 `[ColoredNoiseSampling]`.
 
-- **On startup** (once): `[ColoredNoiseSampling] loaded: 3 nodes | 24 stochastic base samplers | gamma folder 'colored_noise_gamma' (2 matrix file(s))`
+- **On startup** (once): `[ColoredNoiseSampling] loaded: 3 nodes | 22 stochastic base samplers | gamma folder 'colored_noise_gamma' (2 matrix file(s))`
 - **Each generation** (per sample): `[ColoredNoiseSampling] sampling: base=dpmpp_2m_sde | parametric alpha 0.00->-1.50 (linear) | energy=1.00 | 25 steps | colored noise ACTIVE`
 - **Colored initial noise** (when the NOISE node is used): `[ColoredNoiseSampling] colored initial noise: alpha=-1.00 | energy=1.00 | seed=...`
 - **Warnings** (deduped): e.g. a one-time notice if `torch.fft` falls back to CPU on your backend.
@@ -124,7 +124,7 @@ BasicGuider ─────────────┘
 Pure-engine unit tests (no model weights), run in the `comfyenv` environment:
 ```
 cd custom_nodes/ComfyUI-ColoredNoiseSampling
-python -m pytest tests/ -q          # 26 tests: spectral shaping, schedule, batch determinism, ...
+python -m pytest tests/ -q          # spectral shaping, schedule, batch determinism, every-sampler integration, nodes, logging
 ruff check .
 ```
 

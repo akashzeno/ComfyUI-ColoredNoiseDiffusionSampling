@@ -34,3 +34,15 @@ def test_make_colored_noise_sampler_deterministic():
     a = cn.make_colored_noise_sampler(x, sig, p, seed=7)(3.0, 1.0)
     b = cn.make_colored_noise_sampler(x, sig, p, seed=7)(3.0, 1.0)
     assert torch.allclose(a, b)
+
+
+def test_colored_noise_sampler_sequence_matches_and_advances():
+    x = torch.randn(1, 4, 16, 16)
+    sig = torch.tensor([14.6, 5.0, 1.0, 0.0])
+    p = cn.ColorParams(mode="parametric")
+    nsa = cn.make_colored_noise_sampler(x, sig, p, seed=11)
+    nsb = cn.make_colored_noise_sampler(x, sig, p, seed=11)
+    a1, a2 = nsa(5.0, 1.0), nsa(1.0, 0.0)
+    b1, b2 = nsb(5.0, 1.0), nsb(1.0, 0.0)
+    assert torch.allclose(a1, b1) and torch.allclose(a2, b2)  # same seed -> identical sequence
+    assert not torch.allclose(a1, a2)                          # generator advances between steps

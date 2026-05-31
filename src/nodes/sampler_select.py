@@ -52,7 +52,9 @@ class ColoredNoise_SamplerSelect(io.ComfyNode):
             inputs=[
                 io.Combo.Input("base_sampler", options=samplers, default=default_sampler(samplers),
                                tooltip="Stochastic base sampler whose per-step noise is colored."),
-                io.Float.Input("eta", default=1.0, min=0.0, max=100.0, step=0.01, round=False),
+                io.Float.Input("eta", default=1.0, min=0.0, max=100.0, step=0.01, round=False,
+                               tooltip="Stochasticity. eta=0 makes the SDE/ancestral step deterministic, "
+                                       "which disables colored noise entirely."),
                 io.Float.Input("s_noise", default=1.0, min=0.0, max=100.0, step=0.01, round=False),
                 io.Combo.Input("mode", options=["parametric", "gamma_matrix"], default="parametric"),
                 io.Float.Input("alpha_start", default=0.0, min=-8.0, max=8.0, step=0.05, round=False,
@@ -69,7 +71,6 @@ class ColoredNoise_SamplerSelect(io.ComfyNode):
                 io.Float.Input("alpha_tilting", default=0.0, min=-8.0, max=8.0, step=0.05, round=False, advanced=True),
                 io.Float.Input("energy_scale", default=1.0, min=0.0, max=4.0, step=0.01, round=False, advanced=True,
                                tooltip="Scales noise std after unit-variance renorm. 1.0 = neutral; >1 injects more 'heat'."),
-                io.Combo.Input("noise_device", options=["gpu", "cpu"], default="gpu", advanced=True),
             ],
             outputs=[io.Sampler.Output()],
         )
@@ -77,14 +78,15 @@ class ColoredNoise_SamplerSelect(io.ComfyNode):
     @classmethod
     def execute(cls, base_sampler, eta, s_noise, mode, alpha_start, alpha_end, interpolation,
                 exp_sharpness, gamma_matrix, gamma_divider, gamma_shaping, power_gamma,
-                alpha_tilting, energy_scale, noise_device) -> io.NodeOutput:
+                alpha_tilting, energy_scale) -> io.NodeOutput:
         base_fn = stochastic_samplers()[base_sampler]
         params = resolve_color_params(mode, alpha_start, alpha_end, interpolation, exp_sharpness,
                                       gamma_matrix, gamma_divider, gamma_shaping, power_gamma,
                                       alpha_tilting, energy_scale)
-        # eta/s_noise/r/solver_type are filtered to what the chosen base actually accepts.
-        base_opts = {"eta": eta, "s_noise": s_noise, "r": 0.5, "solver_type": "midpoint"}
-        sampler = build_colored_sampler(base_fn, base_opts, params)
+        # Only the universal SDE knobs are forwarded; each base keeps its own valid default for
+        # solver_type/r (forcing solver_type crashed phi_* bases and downgraded the _heun variant).
+        # build_colored_sampler filters these to what the chosen base actually accepts.
+        sampler = build_colored_sampler(base_fn, {"eta": eta, "s_noise": s_noise}, params)
         return io.NodeOutput(sampler)
 
     get_sampler = execute

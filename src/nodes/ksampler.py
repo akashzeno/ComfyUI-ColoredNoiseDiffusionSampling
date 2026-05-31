@@ -6,6 +6,7 @@ the colored sampler, optionally swaps in colored initial noise, runs comfy.sampl
 import comfy.samplers
 import comfy.sample
 import comfy.utils
+import comfy.nested_tensor
 import latent_preview
 from comfy_api.latest import io
 
@@ -37,7 +38,8 @@ class ColoredNoise_KSampler(io.ComfyNode):
                 io.Float.Input("denoise", default=1.0, min=0.0, max=1.0, step=0.01),
                 io.Boolean.Input("color_initial_noise", default=False,
                                  tooltip="Also color the initial latent noise (uses alpha_start as a constant color)."),
-                io.Float.Input("eta", default=1.0, min=0.0, max=100.0, step=0.01, round=False, advanced=True),
+                io.Float.Input("eta", default=1.0, min=0.0, max=100.0, step=0.01, round=False, advanced=True,
+                               tooltip="Stochasticity. eta=0 makes the step deterministic, disabling colored noise."),
                 io.Float.Input("s_noise", default=1.0, min=0.0, max=100.0, step=0.01, round=False, advanced=True),
                 io.Combo.Input("mode", options=["parametric", "gamma_matrix"], default="parametric"),
                 io.Float.Input("alpha_start", default=0.0, min=-8.0, max=8.0, step=0.05, round=False),
@@ -62,12 +64,15 @@ class ColoredNoise_KSampler(io.ComfyNode):
                 scheduler, denoise, color_initial_noise, eta, s_noise, mode, alpha_start, alpha_end,
                 interpolation, exp_sharpness, gamma_matrix, gamma_divider, gamma_shaping,
                 power_gamma, alpha_tilting, energy_scale) -> io.NodeOutput:
+        if denoise <= 0.0:
+            return io.NodeOutput(latent_image.copy(), latent_image.copy())  # clean no-op
         params = resolve_color_params(mode, alpha_start, alpha_end, interpolation, exp_sharpness,
                                       gamma_matrix, gamma_divider, gamma_shaping, power_gamma,
                                       alpha_tilting, energy_scale)
         base_fn = stochastic_samplers()[base_sampler]
-        sampler = build_colored_sampler(
-            base_fn, {"eta": eta, "s_noise": s_noise, "r": 0.5, "solver_type": "midpoint"}, params)
+        # Only the universal SDE knobs are forwarded; each base keeps its own valid default for
+        # solver_type/r (forcing solver_type crashed phi_* bases and downgraded the _heun variant).
+        sampler = build_colored_sampler(base_fn, {"eta": eta, "s_noise": s_noise}, params)
 
         # sigmas (mirror BasicScheduler denoise handling)
         total_steps = steps if denoise >= 1.0 else max(1, int(steps / max(denoise, 1e-6)))
@@ -98,8 +103,12 @@ class ColoredNoise_KSampler(io.ComfyNode):
         out = latent.copy()
         out["samples"] = samples
         if "x0" in x0_output:
+            x0_out = model.model.process_latent_out(x0_output["x0"].cpu())
+            if samples.is_nested:  # mirror SamplerCustom's nested repack for video latents
+                latent_shapes = [t.shape for t in samples.unbind()]
+                x0_out = comfy.nested_tensor.NestedTensor(comfy.utils.unpack_latents(x0_out, latent_shapes))
             out_denoised = latent.copy()
-            out_denoised["samples"] = model.model.process_latent_out(x0_output["x0"].cpu())
+            out_denoised["samples"] = x0_out
         else:
             out_denoised = out
         return io.NodeOutput(out, out_denoised)
