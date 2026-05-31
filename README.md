@@ -88,6 +88,19 @@ own, drop a raw `[steps, bins]` float32 tensor (`torch.save`, `.pt`/`.pth`) into
 - **Samplers** — only **stochastic** samplers are offered (deterministic ones never inject per-step
   noise, so coloring them would be a silent no-op).
 
+## Logging
+
+The pack logs through Python's standard `logging` (named logger `ComfyUI-ColoredNoiseSampling`),
+so you can see in the ComfyUI console that it's actually running. All messages are tagged
+`[ColoredNoiseSampling]`.
+
+- **On startup** (once): `[ColoredNoiseSampling] loaded: 3 nodes | 24 stochastic base samplers | gamma folder 'colored_noise_gamma' (2 matrix file(s))`
+- **Each generation** (per sample): `[ColoredNoiseSampling] sampling: base=dpmpp_2m_sde | parametric alpha 0.00->-1.50 (linear) | energy=1.00 | 25 steps | colored noise ACTIVE`
+- **Colored initial noise** (when the NOISE node is used): `[ColoredNoiseSampling] colored initial noise: alpha=-1.00 | energy=1.00 | seed=...`
+- **Warnings** (deduped): e.g. a one-time notice if `torch.fft` falls back to CPU on your backend.
+- **Per-step detail** (`DEBUG`): launch ComfyUI with `--verbose DEBUG` to also see per-step
+  `progress` and the low/mid/high spectral scaling — useful for tuning, off by default.
+
 ## Install
 
 Clone into `ComfyUI/custom_nodes/` and restart ComfyUI. No extra dependencies (torch comes with
