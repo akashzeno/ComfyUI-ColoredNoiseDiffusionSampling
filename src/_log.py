@@ -1,14 +1,14 @@
 """Package logging.
 
 A named logger (best practice — the app owns handlers/levels). ComfyUI's root formatter shows
-only ``%(message)s``, so messages are tagged ``[ColoredNoiseSampling]`` to stay identifiable.
+only ``%(message)s``, so messages are tagged ``[ColoredNoiseDiffusionSampling]`` to stay identifiable.
 INFO = lifecycle (load, each sample, initial noise); WARNING = fallbacks (deduped);
 DEBUG = per-step diagnostics (visible with ``--verbose DEBUG``).
 """
 import logging
 
-LOGGER = logging.getLogger("ComfyUI-ColoredNoiseSampling")
-_TAG = "[ColoredNoiseSampling]"
+LOGGER = logging.getLogger("ComfyUI-ColoredNoiseDiffusionSampling")
+_TAG = "[ColoredNoiseDiffusionSampling]"
 _seen_once = set()
 
 

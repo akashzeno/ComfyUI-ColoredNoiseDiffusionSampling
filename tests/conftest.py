@@ -2,7 +2,7 @@ import os
 import sys
 
 HERE = os.path.dirname(__file__)
-PKG = os.path.dirname(HERE)                          # ComfyUI-ColoredNoiseSampling
+PKG = os.path.dirname(HERE)                          # ComfyUI-ColoredNoiseDiffusionSampling
 COMFY_ROOT = os.path.dirname(os.path.dirname(PKG))   # ComfyUI repo root
 
 for p in (COMFY_ROOT, PKG):

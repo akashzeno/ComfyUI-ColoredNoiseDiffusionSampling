@@ -1,4 +1,4 @@
-# ComfyUI-ColoredNoiseSampling
+# ComfyUI-ColoredNoiseDiffusionSampling
 
 Frequency-shaped (**colored**) noise for ComfyUI's stochastic diffusion sampling — a clean,
 native port of the *transferable mechanism* behind
@@ -90,13 +90,13 @@ own, drop a raw `[steps, bins]` float32 tensor (`torch.save`, `.pt`/`.pth`) into
 
 ## Logging
 
-The pack logs through Python's standard `logging` (named logger `ComfyUI-ColoredNoiseSampling`),
+The pack logs through Python's standard `logging` (named logger `ComfyUI-ColoredNoiseDiffusionSampling`),
 so you can see in the ComfyUI console that it's actually running. All messages are tagged
-`[ColoredNoiseSampling]`.
+`[ColoredNoiseDiffusionSampling]`.
 
-- **On startup** (once): `[ColoredNoiseSampling] loaded: 3 nodes | 22 stochastic base samplers | gamma folder 'colored_noise_gamma' (2 matrix file(s))`
-- **Each generation** (per sample): `[ColoredNoiseSampling] sampling: base=dpmpp_2m_sde | parametric alpha 0.00->-1.50 (linear) | energy=1.00 | 25 steps | colored noise ACTIVE`
-- **Colored initial noise** (when the NOISE node is used): `[ColoredNoiseSampling] colored initial noise: alpha=-1.00 | energy=1.00 | seed=...`
+- **On startup** (once): `[ColoredNoiseDiffusionSampling] loaded: 3 nodes | 22 stochastic base samplers | gamma folder 'colored_noise_gamma' (2 matrix file(s))`
+- **Each generation** (per sample): `[ColoredNoiseDiffusionSampling] sampling: base=dpmpp_2m_sde | parametric alpha 0.00->-1.50 (linear) | energy=1.00 | 25 steps | colored noise ACTIVE`
+- **Colored initial noise** (when the NOISE node is used): `[ColoredNoiseDiffusionSampling] colored initial noise: alpha=-1.00 | energy=1.00 | seed=...`
 - **Warnings** (deduped): e.g. a one-time notice if `torch.fft` falls back to CPU on your backend.
 - **Per-step detail** (`DEBUG`): launch ComfyUI with `--verbose DEBUG` to also see per-step
   `progress` and the low/mid/high spectral scaling — useful for tuning, off by default.
@@ -123,7 +123,7 @@ BasicGuider ─────────────┘
 
 Pure-engine unit tests (no model weights), run in the `comfyenv` environment:
 ```
-cd custom_nodes/ComfyUI-ColoredNoiseSampling
+cd custom_nodes/ComfyUI-ColoredNoiseDiffusionSampling
 python -m pytest tests/ -q          # spectral shaping, schedule, batch determinism, every-sampler integration, nodes, logging
 ruff check .
 ```

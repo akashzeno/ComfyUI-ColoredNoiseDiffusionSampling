@@ -1,4 +1,4 @@
-"""ComfyUI-ColoredNoiseSampling — V3 custom-node pack.
+"""ComfyUI-ColoredNoiseDiffusionSampling — V3 custom-node pack.
 
 This package registers exclusively via the V3 ``comfy_entrypoint``. It deliberately does NOT
 define ``NODE_CLASS_MAPPINGS`` — doing so would make ComfyUI's loader take the V1 branch and

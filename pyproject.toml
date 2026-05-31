@@ -1,17 +1,17 @@
 [project]
-name = "comfyui-colorednoisesampling"
+name = "comfyui-colorednoisediffusionsampling"
 version = "0.1.0"
-description = "Colored (frequency-shaped) noise sampling for ComfyUI: parametric + faithful gamma-matrix modes."
+description = "Colored (frequency-shaped) noise diffusion sampling for ComfyUI: parametric + faithful gamma-matrix modes."
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
 dependencies = []
 
 [project.urls]
-Repository = "https://github.com/akashzeno/ComfyUI-ColoredNoiseSampling"
+Repository = "https://github.com/akashzeno/ComfyUI-ColoredNoiseDiffusionSampling"
 
 [tool.comfy]
 PublisherId = "akashzeno"
-DisplayName = "ComfyUI-ColoredNoiseSampling"
+DisplayName = "ComfyUI-ColoredNoiseDiffusionSampling"
 
 # NOTE: pytest config lives in tests/pytest.ini (NOT here). Keeping it out of pyproject.toml
 # means pytest's rootdir is tests/, so the package's V3 __init__.py (which uses ComfyUI's

@@ -6,7 +6,7 @@ from src.sampling.colored_ksampler import build_colored_sampler
 from src.sampling.initial_noise import Noise_ColoredInitial
 from src.engine.colored_noise import ColorParams, make_colored_noise_sampler
 
-LOGGER = "ComfyUI-ColoredNoiseSampling"
+LOGGER = "ComfyUI-ColoredNoiseDiffusionSampling"
 
 
 def _fake_base(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler=None,
