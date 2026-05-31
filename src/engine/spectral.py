@@ -1,8 +1,10 @@
-"""Pure-torch spectral shaping primitives for colored noise.
+"""Pure-torch spectral shaping primitives for colored noise (plus stdlib logging only).
 
-Imports only ``torch`` so it can be unit-tested without a running ComfyUI.
+No ComfyUI dependency, so it can be unit-tested without a running ComfyUI.
 """
 import torch
+
+from .. import _log
 
 # Cache of radial frequency -> bin-index maps, keyed by (kind, *shape, num_bins).
 # Stored on CPU; moved to the working device per call.
@@ -85,6 +87,7 @@ def color_tensor(white, scaling_vector, energy_scale=1.0):
         grid = scaling_vector.to(white.device)[radial_bin_map_1d(length, num_bins, white.device)]
         dims = (-1,)
     else:
+        _log.debug("latent rank %d not spatially shapeable; passing noise through unshaped", ndim)
         return white  # cannot meaningfully shape (<3d, e.g. flat audio not in [B,C,L] form)
 
     orig_dtype = white.dtype
@@ -94,6 +97,9 @@ def color_tensor(white, scaling_vector, energy_scale=1.0):
         shaped = torch.fft.ifftn(spec * grid, dim=dims).real
     except RuntimeError:
         # DirectML / MPS reject torch.fft -> CPU fallback (mirrors comfy_extras FreeU/FreSca).
+        _log.warn_once("fft_cpu_fallback_%s" % white.device.type,
+                       "torch.fft unsupported on %s; using CPU fallback for spectral shaping",
+                       white.device.type)
         spec = torch.fft.fftn(wf.cpu(), dim=dims)
         shaped = torch.fft.ifftn(spec * grid.detach().cpu(), dim=dims).real.to(white.device)
 

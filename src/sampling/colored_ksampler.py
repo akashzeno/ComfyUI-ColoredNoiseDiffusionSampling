@@ -10,6 +10,7 @@ import inspect
 import comfy.samplers
 
 from ..engine.colored_noise import make_colored_noise_sampler
+from .. import _log
 
 
 def build_colored_sampler(base_fn, base_opts, params):
@@ -23,6 +24,16 @@ def build_colored_sampler(base_fn, base_opts, params):
 
     def sampler_function(model, x, sigmas, extra_args=None, callback=None, disable=None, **extra_options):
         seed = (extra_args or {}).get("seed", None)
+        base_name = getattr(base_fn, "__name__", "sampler").replace("sample_", "")
+        steps = max(0, len(sigmas) - 1)
+        if params.mode == "gamma_matrix":
+            _log.info("sampling: base=%s | gamma_matrix (divider=%.2f, shaping=%s) | energy=%.2f | "
+                      "%d steps | colored noise ACTIVE", base_name, params.gamma_divider,
+                      params.gamma_shaping, params.energy_scale, steps)
+        else:
+            _log.info("sampling: base=%s | parametric alpha %.2f->%.2f (%s) | energy=%.2f | "
+                      "%d steps | colored noise ACTIVE", base_name, params.alpha_start,
+                      params.alpha_end, params.interpolation, params.energy_scale, steps)
         noise_sampler = make_colored_noise_sampler(x, sigmas, params, seed)
         return base_fn(
             model, x, sigmas,

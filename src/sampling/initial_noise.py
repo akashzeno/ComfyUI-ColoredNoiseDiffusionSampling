@@ -10,6 +10,7 @@ import torch
 
 from ..engine.colored_noise import ColorParams, scaling_for_progress
 from ..engine.spectral import color_tensor
+from .. import _log
 
 
 class Noise_ColoredInitial:
@@ -49,6 +50,8 @@ class Noise_ColoredInitial:
 
     def generate_noise(self, input_latent):
         latent = input_latent["samples"]
+        _log.info("colored initial noise: alpha=%.2f | energy=%.2f | seed=%s",
+                  self.params.alpha_start, self.params.energy_scale, self.seed)
         generator = torch.manual_seed(self.seed)
         if latent.is_nested:
             import comfy.nested_tensor as nt

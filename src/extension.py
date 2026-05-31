@@ -5,6 +5,8 @@ import folder_paths
 from typing_extensions import override
 from comfy_api.latest import ComfyExtension, io
 
+from . import _log
+
 GAMMA_FOLDER = "colored_noise_gamma"
 
 
@@ -31,6 +33,11 @@ _register_gamma_folder()
 from .nodes.sampler_select import ColoredNoise_SamplerSelect  # noqa: E402
 from .nodes.noise import ColoredNoise_Noise  # noqa: E402
 from .nodes.ksampler import ColoredNoise_KSampler  # noqa: E402
+from .sampling.registry import stochastic_samplers  # noqa: E402
+
+_log.info("loaded: 3 nodes | %d stochastic base samplers | gamma folder '%s' (%d matrix file(s))",
+          len(stochastic_samplers()), GAMMA_FOLDER,
+          len(folder_paths.get_filename_list(GAMMA_FOLDER)))
 
 
 class ColoredNoiseExtension(ComfyExtension):

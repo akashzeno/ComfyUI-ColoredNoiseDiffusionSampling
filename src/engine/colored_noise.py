@@ -13,6 +13,7 @@ import torch
 
 from .schedule import gamma_row_at, gamma_scaling, interp_alpha, progress_from_sigma
 from .spectral import color_tensor, parametric_scaling
+from .. import _log
 
 # Resolution of the parametric per-frequency profile (gamma mode uses the matrix's bin count).
 PARAMETRIC_BINS = 256
@@ -82,6 +83,10 @@ def make_colored_noise_sampler(x, sigmas, params: ColorParams, seed):
         white = _randn_like_x(x, generator)
         p = progress_from_sigma(sigma, sigma_max, sigma_min)
         scaling = scaling_for_progress(params, p, device=torch.device("cpu"))
+        if _log.debug_enabled():
+            mid = scaling.shape[0] // 2
+            _log.debug("step sigma=%.4f progress=%.3f | scale low/mid/high=%.3f/%.3f/%.3f",
+                       float(sigma), p, float(scaling[0]), float(scaling[mid]), float(scaling[-1]))
         return color_tensor(white, scaling, energy_scale=params.energy_scale)
 
     return noise_sampler
