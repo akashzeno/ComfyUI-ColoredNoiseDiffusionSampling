@@ -4,6 +4,9 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
+# Comfy Registry publish artifact
+node.zip
+
 # guard against accidental throwaway scratch/probe scripts
 _probe*.py
 _scratch*.py
